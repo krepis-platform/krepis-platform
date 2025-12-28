@@ -1,41 +1,114 @@
 // ============================================================================
-// krepis ADaaS Platform - Vitest Workspace Configuration
+// Krepis ADaaS Platform - Vitest Workspace Configuration
 // ============================================================================
 //
 // 🎯 Purpose:
-// Configures Vitest as the high-performance test runner for the entire
-// monorepo. Enables ESM support, parallel execution, and unified reporting.
+// Enables parallel test execution across all workspace packages.
+// Each package can have its own vitest.config.ts that extends this configuration.
 //
 // 🏛️ ADaaS Vision Alignment:
-// - Blazing fast test execution (esbuild-powered)
-// - Native ESM support (no transpilation overhead)
-// - Unified coverage reporting across all packages
-//
-// 📐 Hexagonal Architecture Testing Strategy:
-// - Unit tests: Domain and Application layers (isolated)
-// - Integration tests: Infrastructure adapters (with real/mock dependencies)
-// - E2E tests: Full application flow (apps/)
-//
-// CLI Commands:
-// - Run all: pnpm test
-// - Watch mode: pnpm test:watch
-// - Coverage: pnpm test:coverage
-// - Specific package: pnpm test --filter=@krepis/core
-//
+// - Isolated test environments per package
+// - Parallel execution for CI/CD efficiency
+// - Package-specific configurations when needed
 // ============================================================================
 
 import { defineWorkspace } from 'vitest/config';
 
 export default defineWorkspace([
-  // ─────────────────────────────────────────────────────────────────────────
-  // Packages Configuration
-  // Each package has its own test configuration for isolation
-  // ─────────────────────────────────────────────────────────────────────────
-  'packages/*/vitest.config.ts',
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Core Packages
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    extends: './vitest.config.ts',
+    test: {
+      name: '@krepis/core',
+      root: './packages/core',
+      include: ['src/**/*.{test,spec}.ts', '__tests__/**/*.{test,spec}.ts'],
+    },
+  },
+  {
+    extends: './vitest.config.ts',
+    test: {
+      name: '@krepis/shared',
+      root: './packages/shared',
+      include: ['src/**/*.{test,spec}.ts', '__tests__/**/*.{test,spec}.ts'],
+    },
+  },
+  {
+    extends: './vitest.config.ts',
+    test: {
+      name: '@krepis/resilience',
+      root: './packages/resilience',
+      include: ['src/**/*.{test,spec}.ts', '__tests__/**/*.{test,spec}.ts'],
+    },
+  },
+  {
+    extends: './vitest.config.ts',
+    test: {
+      name: '@krepis/config',
+      root: './packages/config',
+      include: ['src/**/*.{test,spec}.ts', '__tests__/**/*.{test,spec}.ts'],
+    },
+  },
+  {
+    extends: './vitest.config.ts',
+    test: {
+      name: '@krepis/cache',
+      root: './packages/cache',
+      include: ['src/**/*.{test,spec}.ts', '__tests__/**/*.{test,spec}.ts'],
+    },
+  },
+  {
+    extends: './vitest.config.ts',
+    test: {
+      name: '@krepis/cli',
+      root: './packages/cli',
+      include: ['src/**/*.{test,spec}.ts', '__tests__/**/*.{test,spec}.ts'],
+    },
+  },
+  {
+    extends: './vitest.config.ts',
+    test: {
+      name: '@krepis/testing',
+      root: './packages/testing',
+      include: ['src/**/*.{test,spec}.ts', '__tests__/**/*.{test,spec}.ts'],
+    },
+  },
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Applications Configuration
-  // Apps may have different testing requirements (e.g., E2E)
-  // ─────────────────────────────────────────────────────────────────────────
-  'apps/*/vitest.config.ts',
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Adapter Packages
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    extends: './vitest.config.ts',
+    test: {
+      name: '@krepis/adapter-prisma',
+      root: './packages/adapter-prisma',
+      include: ['src/**/*.{test,spec}.ts', '__tests__/**/*.{test,spec}.ts'],
+      // Integration tests may need longer timeout
+      testTimeout: 60000,
+    },
+  },
+  {
+    extends: './vitest.config.ts',
+    test: {
+      name: '@krepis/adapter-redis',
+      root: './packages/adapter-redis',
+      include: ['src/**/*.{test,spec}.ts', '__tests__/**/*.{test,spec}.ts'],
+      testTimeout: 60000,
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Applications (BaaS)
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Add app-specific configurations here as they are created
+  // Example:
+  // {
+  //   extends: './vitest.config.ts',
+  //   test: {
+  //     name: 'baas-api',
+  //     root: './apps/baas-api',
+  //     include: ['src/**/*.{test,spec}.ts', '__tests__/**/*.{test,spec}.ts'],
+  //   },
+  // },
 ]);

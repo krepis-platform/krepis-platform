@@ -1,11 +1,42 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
+
+  "_comment": [
+    "============================================================================",
+    "Krepis ADaaS Platform - Root TypeScript Configuration",
+    "============================================================================",
+    "",
+    "🎯 Purpose:",
+    "Root configuration that references all workspace packages for IDE support",
+    "and composite project builds.",
+    "",
+    "📦 Package References:",
+    "Each package under 'packages/' and 'apps/' is referenced here for",
+    "TypeScript project references feature, enabling incremental builds.",
+    "============================================================================"
+  ],
+
   "extends": "./tsconfig.base.json",
+
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@krepis/*": ["packages/*/src"]
-    }
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "noEmit": false
   },
-  "include": ["**/*.ts", "**/*.js", "eslint.config.js"],
-  "exclude": ["node_modules", "dist"]
+
+  "files": [],
+
+  "references": [
+    { "path": "packages/shared" },
+    { "path": "packages/core" }
+  ],
+
+  "exclude": [
+    "node_modules",
+    "dist",
+    "coverage",
+    ".turbo",
+    "native"
+  ]
 }

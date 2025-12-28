@@ -1,41 +1,24 @@
 # ============================================================================
-# krepis ADaaS Platform - PNPM Workspace Configuration
+# Krepis ADaaS Platform - pnpm Workspace Configuration
 # ============================================================================
 #
 # 🎯 Purpose:
-# Defines the monorepo workspace structure for the krepis platform.
-# This configuration enables pnpm to manage dependencies across all packages
-# and applications efficiently with hoisting and workspace protocol.
+# Defines the package locations for the pnpm monorepo.
+# All packages under these directories are treated as workspace packages.
 #
 # 🏛️ ADaaS Vision Alignment:
-# - `apps/`: Production-grade applications (BaaS API, Data Engine, Marketplace)
-# - `packages/`: Reusable core modules following Hexagonal Architecture
-# - `tools/`: Development utilities and scripts
-#
-# 📐 Hexagonal Architecture Mapping:
-# - packages/core: Domain + Application Ports (Interfaces)
-# - packages/architecture: Hexagonal Architecture enforcement rules
-# - packages/resilience: Infrastructure concerns (Circuit Breaker, Retry)
-# - packages/sknul: SKNUL Protocol - Next-gen networking infrastructure
-#
+# - apps/: BaaS applications (Backend as a Service)
+# - packages/: @krepis/* core and adapter libraries
+# - native/: Rust-based high-performance native modules
 # ============================================================================
 
 packages:
-  # ─────────────────────────────────────────────────────────────────────────
-  # Applications Layer
-  # Production-grade services that compose packages into deployable units
-  # ─────────────────────────────────────────────────────────────────────────
-  - "apps/*"
-
-  # ─────────────────────────────────────────────────────────────────────────
-  # Packages Layer
-  # Reusable modules following strict Hexagonal Architecture principles
-  # All packages expose only Ports (interfaces); Adapters are separate
-  # ─────────────────────────────────────────────────────────────────────────
-  - "packages/*"
-
-  # ─────────────────────────────────────────────────────────────────────────
-  # Tools Layer
-  # Development utilities, scripts, and build configurations
-  # ─────────────────────────────────────────────────────────────────────────
-  - "tools/*"
+  # Core framework packages
+  - 'packages/*'
+  
+  # BaaS Applications
+  - 'apps/*'
+  
+  # Exclude native Rust modules from pnpm
+  # They are managed by Cargo workspaces
+  # - '!native/*'

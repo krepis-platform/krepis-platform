@@ -1,85 +1,124 @@
 {
-  "name": "krepis-platform",
-  "type": "module",
+  "name": "krepis",
   "version": "0.0.0",
   "private": true,
-  "description": "krepis ADaaS Platform - Next-generation Architecture Development as a Service",
-  "author": "krepis Team <team@krepis.dev>",
-  "license": "Apache-2.0",
+  "description": "Krepis ADaaS Platform - Enterprise-grade Backend Architecture Framework",
+  "license": "MIT",
+  "author": {
+    "name": "Krepis Team",
+    "email": "team@krepis.io"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/krepis-platform/krepis-platform.git"
+    "url": "https://github.com/krepis/krepis.git"
   },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
-  "homepage": "https://krepis.dev",
+  "homepage": "https://krepis.io",
+  "keywords": [
+    "backend",
+    "framework",
+    "hexagonal-architecture",
+    "ddd",
+    "cqrs",
+    "typescript",
+    "enterprise",
+    "adaas"
+  ],
+  "type": "module",
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=20.0.0",
     "pnpm": ">=9.0.0"
   },
   "packageManager": "pnpm@9.15.0",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
-    "──────────────────── BUILD ────────────────────": "",
+    "=== BUILD ===": "",
     "build": "turbo run build",
-    "build:packages": "turbo run build --filter='@krepis/core'",
+    "build:packages": "turbo run build --filter='./packages/*'",
     "build:apps": "turbo run build --filter='./apps/*'",
-    "dev": "turbo run dev",
-    "──────────────────── TEST ────────────────────": "",
-    "test": "turbo run test",
-    "test:unit": "turbo run test:unit",
-    "test:integration": "turbo run test:integration",
-    "test:coverage": "turbo run test:coverage --filter=@krepis/core",
+    "build:native": "turbo run native:build",
+    "dev": "turbo run dev --parallel",
+
+    "=== TEST ===": "",
+    "test": "vitest run",
     "test:watch": "vitest",
-    "──────────────────── LINT & FORMAT ────────────────────": "",
-    "lint": "turbo run lint --filter=@krepis/core",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+
+    "=== QUALITY ===": "",
+    "lint": "turbo run lint",
     "lint:fix": "turbo run lint:fix",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\"",
-    "typecheck": "turbo run typecheck --filter=@krepis/core",
-    "──────────────────── ARCHITECTURE GUARD ────────────────────": "",
-    "arch:validate": "depcruise --config .dependency-cruiser.js packages apps",
-    "arch:graph": "depcruise --config .dependency-cruiser.js --output-type dot packages | dot -T svg > architecture-graph.svg",
-    "──────────────────── UTILITIES ────────────────────": "",
-    "clean": "turbo run clean && rm -rf node_modules .turbo",
-    "clean:turbo": "rm -rf .turbo node_modules/.cache/turbo",
-    "prepare": "husky",
-    "──────────────────── RELEASE ────────────────────": "",
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
+
+    "=== ARCHITECTURE ===": "",
+    "arch:validate": "dependency-cruiser --config .dependency-cruiser.js packages apps",
+    "arch:graph": "dependency-cruiser --config .dependency-cruiser.js --output-type dot packages | dot -T svg > docs/architecture/dependency-graph.svg",
+
+    "=== VERSION & RELEASE ===": "",
     "changeset": "changeset",
-    "version": "changeset version",
-    "release": "turbo run build --filter='./packages/*' && changeset publish"
+    "changeset:version": "changeset version",
+    "changeset:publish": "pnpm build && changeset publish",
+
+    "=== GIT HOOKS ===": "",
+    "prepare": "husky",
+
+    "=== UTILITIES ===": "",
+    "clean": "turbo run clean && rm -rf node_modules .turbo coverage",
+    "clean:dist": "turbo run clean",
+    "clean:full": "pnpm clean && find . -name 'node_modules' -type d -prune -exec rm -rf {} +",
+
+    "=== CLI (Krepis Generator) ===": "",
+    "krepis": "pnpm --filter @krepis/cli exec krepis",
+    "generate:domain": "pnpm krepis generate:domain"
   },
   "devDependencies": {
-    "@changesets/changelog-github": "^0.5.2",
     "@changesets/cli": "^2.27.10",
-    "@commitlint/cli": "^19.6.0",
+    "@commitlint/cli": "^19.6.1",
     "@commitlint/config-conventional": "^19.6.0",
     "@types/node": "^22.10.2",
-    "@typescript-eslint/eslint-plugin": "^8.18.0",
-    "@typescript-eslint/parser": "^8.18.0",
+    "@typescript-eslint/eslint-plugin": "^8.18.2",
+    "@typescript-eslint/parser": "^8.18.2",
     "@vitest/coverage-v8": "^2.1.8",
     "@vitest/ui": "^2.1.8",
     "dependency-cruiser": "^16.8.0",
-    "eslint": "^9.16.0",
+    "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
+    "eslint-import-resolver-typescript": "^3.7.0",
     "eslint-plugin-import": "^2.31.0",
-    "globals": "^15.14.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.2.11",
     "prettier": "^3.4.2",
-    "tsup": "^8.5.1",
+    "tsup": "^8.3.5",
     "turbo": "^2.3.3",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
   },
+  "pnpm": {
+    "overrides": {
+      "typescript": "^5.7.2"
+    },
+    "peerDependencyRules": {
+      "ignoreMissing": [
+        "@types/react",
+        "react",
+        "react-dom"
+      ]
+    }
+  },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
-      "eslint --fix --no-warn-ignored",
+    "*.{ts,tsx}": [
+      "eslint --fix",
       "prettier --write"
     ],
-    "*.{json,md,yaml,yml}": [
+    "*.{json,md,yml,yaml}": [
       "prettier --write"
+    ],
+    "packages/**/*.ts": [
+      "dependency-cruiser --config .dependency-cruiser.js --validate"
     ]
   }
 }

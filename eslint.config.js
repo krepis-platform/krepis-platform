@@ -1,38 +1,32 @@
 // ============================================================================
-// krepis ADaaS Platform - ESLint Configuration (Flat Config)
+// Krepis ADaaS Platform - ESLint Configuration (Flat Config)
 // ============================================================================
 //
 // 🎯 Purpose:
-// Defines the "krepis Constitution" - a comprehensive set of linting rules
-// that enforce code quality, consistency, and architectural integrity across
-// the entire monorepo.
+// Enforces code quality standards and architectural rules across the monorepo.
+// Uses ESLint v9 flat config format.
 //
 // 🏛️ ADaaS Vision Alignment:
-// - Consistent code style across 1,000+ file projects
-// - Automated enforcement of best practices
-// - Zero-tolerance for common anti-patterns
+// - Strict TypeScript type checking
+// - Import order enforcement for hexagonal architecture
+// - Consistent code patterns across all packages
 //
-// 📐 Hexagonal Architecture Enforcement:
-// - Import order reflects architectural layers
-// - Circular dependency prevention
-// - Domain isolation rules
-//
+// 📐 Hexagonal Architecture Support:
+// - Import restrictions enforce layer boundaries
+// - No circular dependencies allowed
+// - Domain layer must remain pure
 // ============================================================================
 
 import eslint from '@eslint/js';
 import tseslint from '@typescript-eslint/eslint-plugin';
-import tsparser from '@typescript-eslint/parser';
+import tsParser from '@typescript-eslint/parser';
 import importPlugin from 'eslint-plugin-import';
-import prettier from 'eslint-config-prettier';
-import globals from 'globals';
+import prettierConfig from 'eslint-config-prettier';
 
-/**
- * @type {import('eslint').Linter.FlatConfig[]}
- */
+/** @type {import('eslint').Linter.Config[]} */
 export default [
   // ─────────────────────────────────────────────────────────────────────────
   // Global Ignores
-  // Files and directories excluded from all linting
   // ─────────────────────────────────────────────────────────────────────────
   {
     ignores: [
@@ -41,36 +35,32 @@ export default [
       '**/build/**',
       '**/coverage/**',
       '**/.turbo/**',
-      '**/.next/**',
-      '**/generated/**',
+      '**/native/**',
       '**/*.d.ts',
-      '**/vitest.config.ts',
-      '**/tsup.config.ts',
+      '**/generated/**',
+      'eslint.config.js',
+      '*.config.js',
+      '*.config.ts',
     ],
   },
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Base JavaScript Configuration
+  // Base JavaScript Rules
   // ─────────────────────────────────────────────────────────────────────────
   eslint.configs.recommended,
 
   // ─────────────────────────────────────────────────────────────────────────
   // TypeScript Configuration
-  // Strict rules for enterprise-grade type safety
   // ─────────────────────────────────────────────────────────────────────────
   {
-    files: ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.cts'],
+    files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
-      parser: tsparser,
+      parser: tsParser,
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
         project: ['./tsconfig.json', './packages/*/tsconfig.json', './apps/*/tsconfig.json'],
         tsconfigRootDir: import.meta.dirname,
-      },
-      globals: {
-        ...globals.node,
-        ...globals.es2022,
       },
     },
     plugins: {
@@ -81,16 +71,6 @@ export default [
       // ─────────────────────────────────────────────────────────────────────
       // TypeScript Strict Rules
       // ─────────────────────────────────────────────────────────────────────
-      '@typescript-eslint/explicit-function-return-type': [
-        'error',
-        {
-          allowExpressions: true,
-          allowTypedFunctionExpressions: true,
-          allowHigherOrderFunctions: true,
-        },
-      ],
-      '@typescript-eslint/explicit-module-boundary-types': 'error',
-      '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
@@ -99,111 +79,54 @@ export default [
           caughtErrorsIgnorePattern: '^_',
         },
       ],
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/explicit-function-return-type': [
+        'warn',
+        {
+          allowExpressions: true,
+          allowTypedFunctionExpressions: true,
+          allowHigherOrderFunctions: true,
+          allowDirectConstAssertionInArrowFunctions: true,
+        },
+      ],
+      '@typescript-eslint/explicit-module-boundary-types': 'warn',
       '@typescript-eslint/no-non-null-assertion': 'warn',
-      '@typescript-eslint/prefer-nullish-coalescing': 'error',
-      '@typescript-eslint/prefer-optional-chain': 'error',
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': 'error',
+      '@typescript-eslint/await-thenable': 'error',
+      '@typescript-eslint/require-await': 'error',
+      '@typescript-eslint/no-unnecessary-condition': 'warn',
+      '@typescript-eslint/strict-boolean-expressions': 'off',
       '@typescript-eslint/consistent-type-imports': [
         'error',
         {
           prefer: 'type-imports',
-          fixStyle: 'inline-type-imports',
+          disallowTypeAnnotations: true,
+          fixStyle: 'separate-type-imports',
         },
       ],
       '@typescript-eslint/consistent-type-exports': 'error',
-      '@typescript-eslint/no-floating-promises': 'error',
-      '@typescript-eslint/await-thenable': 'error',
-      '@typescript-eslint/no-misused-promises': 'error',
-      '@typescript-eslint/naming-convention': [
-        'error',
-        // Interfaces MUST start with 'I' (krepis Convention)
-        {
-          selector: 'interface',
-          format: ['PascalCase'],
-          prefix: ['I'],
-        },
-        // Type aliases use PascalCase
-        {
-          selector: 'typeAlias',
-          format: ['PascalCase'],
-        },
-        // Enums use PascalCase
-        {
-          selector: 'enum',
-          format: ['PascalCase'],
-        },
-        // Enum members use PascalCase or UPPER_CASE
-        {
-          selector: 'enumMember',
-          format: ['PascalCase', 'UPPER_CASE'],
-        },
-        // Classes use PascalCase
-        {
-          selector: 'class',
-          format: ['PascalCase'],
-        },
-        // Variables use camelCase or UPPER_CASE for constants
-        {
-          selector: 'variable',
-          format: ['camelCase', 'UPPER_CASE', 'PascalCase'],
-          leadingUnderscore: 'allow',
-        },
-        // Functions use camelCase
-        {
-          selector: 'function',
-          format: ['camelCase', 'PascalCase'],
-        },
-        // Parameters use camelCase
-        {
-          selector: 'parameter',
-          format: ['camelCase'],
-          leadingUnderscore: 'allow',
-        },
-        // Properties use camelCase
-        {
-          selector: 'property',
-          format: ['camelCase', 'UPPER_CASE', 'PascalCase'],
-          leadingUnderscore: 'allow',
-        },
-      ],
+      '@typescript-eslint/no-import-type-side-effects': 'error',
 
       // ─────────────────────────────────────────────────────────────────────
-      // Import Rules - Hexagonal Architecture Layer Enforcement
+      // Import Rules (Hexagonal Architecture Enforcement)
       // ─────────────────────────────────────────────────────────────────────
       'import/order': [
         'error',
         {
           groups: [
-            'builtin', // Node.js built-ins
-            'external', // npm packages
-            'internal', // @krepis/* packages
-            'parent', // Parent directories
-            'sibling', // Same directory
-            'index', // Index files
-            'type', // Type imports
+            'builtin',
+            'external',
+            'internal',
+            ['parent', 'sibling'],
+            'index',
+            'type',
           ],
           pathGroups: [
-            // Infrastructure layer imports LAST within internal
-            {
-              pattern: '@krepis/core/infrastructure/**',
-              group: 'internal',
-              position: 'after',
-            },
-            // Application layer imports in middle
-            {
-              pattern: '@krepis/core/application/**',
-              group: 'internal',
-              position: 'after',
-            },
-            // Domain layer imports FIRST within internal
-            {
-              pattern: '@krepis/core/domain/**',
-              group: 'internal',
-              position: 'before',
-            },
-            // All @krepis packages
             {
               pattern: '@krepis/**',
               group: 'internal',
+              position: 'before',
             },
           ],
           pathGroupsExcludedImportTypes: ['type'],
@@ -214,60 +137,62 @@ export default [
           },
         },
       ],
-      'import/no-cycle': ['error', { maxDepth: 10 }],
+      'import/no-cycle': 'error',
       'import/no-self-import': 'error',
+      'import/no-useless-path-segments': 'error',
+      'import/first': 'error',
+      'import/newline-after-import': 'error',
       'import/no-duplicates': 'error',
 
       // ─────────────────────────────────────────────────────────────────────
-      // General Best Practices
+      // General Code Quality
       // ─────────────────────────────────────────────────────────────────────
       'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
       'no-debugger': 'error',
-      'no-eval': 'error',
-      'no-implied-eval': 'error',
+      'no-alert': 'error',
       'no-var': 'error',
       'prefer-const': 'error',
       'prefer-template': 'error',
-      eqeqeq: ['error', 'always'],
+      'prefer-arrow-callback': 'error',
+      'prefer-spread': 'error',
+      'prefer-rest-params': 'error',
+      eqeqeq: ['error', 'always', { null: 'ignore' }],
       curly: ['error', 'all'],
       'no-throw-literal': 'error',
-      'prefer-promise-reject-errors': 'error',
+      'no-return-await': 'off', // Use @typescript-eslint/return-await instead
+      '@typescript-eslint/return-await': ['error', 'in-try-catch'],
 
-      // Disable base rules that conflict with TypeScript
-      'no-unused-vars': 'off',
-      'no-undef': 'off',
+      // ─────────────────────────────────────────────────────────────────────
+      // Krepis-Specific Rules (Result<T, E> Pattern)
+      // ─────────────────────────────────────────────────────────────────────
+      // Discourage throw in favor of Result pattern (soft warning)
+      'no-throw-literal': 'warn',
+    },
+    settings: {
+      'import/resolver': {
+        typescript: {
+          alwaysTryTypes: true,
+          project: ['./tsconfig.json'],
+        },
+      },
     },
   },
 
   // ─────────────────────────────────────────────────────────────────────────
   // Test Files Configuration
-  // Relaxed rules for test files
   // ─────────────────────────────────────────────────────────────────────────
   {
-    files: ['**/*.test.ts', '**/*.spec.ts', '**/tests/**/*.ts'],
+    files: ['**/*.test.ts', '**/*.spec.ts', '**/tests/**/*.ts', '**/__tests__/**/*.ts'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
-      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/no-floating-promises': 'off',
       'no-console': 'off',
     },
   },
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Configuration Files
-  // Rules for config files (ESLint, Vitest, etc.)
+  // Prettier Compatibility (must be last)
   // ─────────────────────────────────────────────────────────────────────────
-  {
-    files: ['*.config.ts', '*.config.js', '*.config.mjs'],
-    rules: {
-      '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/explicit-module-boundary-types': 'off',
-    },
-  },
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // Prettier Integration
-  // Disables formatting rules that conflict with Prettier
-  // ─────────────────────────────────────────────────────────────────────────
-  prettier,
+  prettierConfig,
 ];

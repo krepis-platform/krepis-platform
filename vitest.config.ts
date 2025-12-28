@@ -1,21 +1,28 @@
 // ============================================================================
-// krepis ADaaS Platform - Vitest Root Configuration
+// Krepis ADaaS Platform - Vitest Root Configuration
 // ============================================================================
 //
 // 🎯 Purpose:
-// Provides the default Vitest configuration that packages can extend.
-// Defines global settings for test execution, coverage thresholds,
-// and reporter configuration.
+// Provides the base testing configuration for the entire monorepo.
+// Individual packages can extend this configuration as needed.
 //
 // 🏛️ ADaaS Vision Alignment:
-// - Enterprise-grade test coverage requirements (70%+)
-// - Detailed failure reporting for CI/CD pipelines
-// - Performance optimization for large test suites
+// - Enterprise-grade test coverage requirements (70% minimum)
+// - Parallel test execution for CI/CD efficiency
+// - Path alias support matching tsconfig.base.json
 //
+// 📐 Testing Strategy:
+// - Unit tests: Fast, isolated, no external dependencies
+// - Integration tests: Test adapter implementations
+// - E2E tests: Full pipeline testing (separate configuration)
 // ============================================================================
 
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { defineConfig } from 'vitest/config';
-import path from 'path';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   test: {
@@ -24,11 +31,17 @@ export default defineConfig({
     // ─────────────────────────────────────────────────────────────────────────
     globals: true,
     environment: 'node',
+    root: __dirname,
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Test File Patterns
+    // File Patterns
     // ─────────────────────────────────────────────────────────────────────────
-    include: ['**/*.{test,spec}.{ts,tsx}', '**/tests/**/*.{test,spec}.{ts,tsx}'],
+    include: [
+      'packages/*/src/**/*.{test,spec}.{ts,tsx}',
+      'packages/*/__tests__/**/*.{test,spec}.{ts,tsx}',
+      'apps/*/src/**/*.{test,spec}.{ts,tsx}',
+      'apps/*/__tests__/**/*.{test,spec}.{ts,tsx}',
+    ],
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
@@ -36,16 +49,20 @@ export default defineConfig({
       '**/.{idea,git,cache,output,temp}/**',
       '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
     ],
-    watch: false,
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Coverage Configuration
-    // ADaaS Platform requires minimum 70% coverage
+    // Watch Mode Configuration
+    // ─────────────────────────────────────────────────────────────────────────
+    watch: false,
+    watchExclude: ['**/node_modules/**', '**/dist/**'],
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Coverage Configuration (Enterprise-grade thresholds)
     // ─────────────────────────────────────────────────────────────────────────
     coverage: {
       enabled: true,
       provider: 'v8',
-      reporter: ['text', 'json', 'html', 'lcov'],
+      reporter: ['text', 'text-summary', 'json', 'html', 'lcov', 'clover'],
       reportsDirectory: './coverage',
 
       include: ['packages/*/src/**/*.ts', 'apps/*/src/**/*.ts'],
@@ -55,11 +72,13 @@ export default defineConfig({
         '**/*.spec.ts',
         '**/index.ts',
         '**/types/**',
+        '**/interfaces/**',
         '**/__tests__/**',
         '**/__mocks__/**',
+        '**/generated/**',
       ],
 
-      // Enterprise coverage thresholds
+      // Enterprise coverage thresholds (Spec-aligned)
       thresholds: {
         global: {
           branches: 70,
@@ -67,15 +86,32 @@ export default defineConfig({
           lines: 70,
           statements: 70,
         },
+        // Core packages require higher coverage
+        'packages/core/src/**/*.ts': {
+          branches: 80,
+          functions: 80,
+          lines: 80,
+          statements: 80,
+        },
       },
+
+      // Clean coverage results before running
+      clean: true,
+
+      // All files should be included in coverage
+      all: true,
+
+      // Skip empty files
+      skipFull: false,
     },
 
     // ─────────────────────────────────────────────────────────────────────────
     // Reporter Configuration
     // ─────────────────────────────────────────────────────────────────────────
-    reporters: ['default', 'html'],
+    reporters: ['default', 'html', 'json'],
     outputFile: {
       html: './coverage/test-report.html',
+      json: './coverage/test-results.json',
     },
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -86,14 +122,21 @@ export default defineConfig({
       threads: {
         singleThread: false,
         isolate: true,
+        minThreads: 1,
+        maxThreads: undefined, // Use all available CPUs
       },
     },
 
-    // Test timeout (30 seconds for integration tests)
-    testTimeout: 30000,
+    // ─────────────────────────────────────────────────────────────────────────
+    // Timeouts
+    // ─────────────────────────────────────────────────────────────────────────
+    testTimeout: 30000, // 30 seconds for integration tests
+    hookTimeout: 10000, // 10 seconds for setup/teardown hooks
 
-    // Hook timeout
-    hookTimeout: 10000,
+    // ─────────────────────────────────────────────────────────────────────────
+    // Retry Configuration (for flaky tests in CI)
+    // ─────────────────────────────────────────────────────────────────────────
+    retry: process.env.CI ? 2 : 0,
 
     // ─────────────────────────────────────────────────────────────────────────
     // Sequence Configuration
@@ -102,19 +145,50 @@ export default defineConfig({
       shuffle: false,
       concurrent: true,
     },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Global Setup/Teardown
+    // ─────────────────────────────────────────────────────────────────────────
+    // globalSetup: './tests/global-setup.ts',
+    // globalTeardown: './tests/global-teardown.ts',
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Type Checking (Run alongside tests)
+    // ─────────────────────────────────────────────────────────────────────────
+    typecheck: {
+      enabled: false, // Enable if you want type checking during tests
+      include: ['**/*.{test,spec}.{ts,tsx}'],
+    },
   },
 
-  // ─────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────────
   // Path Aliases (mirrors tsconfig.base.json)
-  // ─────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────────
   resolve: {
     alias: {
       '@krepis/core': path.resolve(__dirname, './packages/core/src'),
-      '@krepis/sknul': path.resolve(__dirname, './packages/sknul/src'),
-      '@krepis/cli': path.resolve(__dirname, './packages/cli/src'),
-      '@krepis/architecture': path.resolve(__dirname, './packages/architecture/src'),
+      '@krepis/context': path.resolve(__dirname, './packages/core/src/context'),
+      '@krepis/di': path.resolve(__dirname, './packages/core/src/di'),
+      '@krepis/pipeline': path.resolve(__dirname, './packages/core/src/pipeline'),
+      '@krepis/cqrs': path.resolve(__dirname, './packages/core/src/cqrs'),
+      '@krepis/uow': path.resolve(__dirname, './packages/core/src/uow'),
+      '@krepis/events': path.resolve(__dirname, './packages/core/src/events'),
+      '@krepis/specification': path.resolve(__dirname, './packages/core/src/specification'),
       '@krepis/resilience': path.resolve(__dirname, './packages/resilience/src'),
+      '@krepis/config': path.resolve(__dirname, './packages/config/src'),
+      '@krepis/cache': path.resolve(__dirname, './packages/cache/src'),
+      '@krepis/cli': path.resolve(__dirname, './packages/cli/src'),
+      '@krepis/adapter-prisma': path.resolve(__dirname, './packages/adapter-prisma/src'),
+      '@krepis/adapter-redis': path.resolve(__dirname, './packages/adapter-redis/src'),
+      '@krepis/testing': path.resolve(__dirname, './packages/testing/src'),
       '@krepis/shared': path.resolve(__dirname, './packages/shared/src'),
     },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Build Optimization
+  // ─────────────────────────────────────────────────────────────────────────────
+  esbuild: {
+    target: 'node20',
   },
 });

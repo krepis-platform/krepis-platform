@@ -1,16 +1,51 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": [".env", "tsconfig.base.json"],
 
-  "globalEnv": ["NODE_ENV", "CI"],
+  "globalDependencies": [
+    ".env",
+    ".env.local",
+    "tsconfig.base.json"
+  ],
+
+  "globalEnv": [
+    "NODE_ENV",
+    "CI",
+    "KREPIS_ENV",
+    "DATABASE_URL",
+    "REDIS_URL"
+  ],
+
+  "ui": "tui",
 
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": ["src/**", "tsconfig.json", "tsup.config.ts", "package.json"],
+      "inputs": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "package.json",
+        "tsconfig.json",
+        "tsup.config.ts"
+      ],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
       "cache": true,
       "persistent": false
+    },
+
+    "native:build": {
+      "dependsOn": [],
+      "inputs": [
+        "native/**/*.rs",
+        "native/**/Cargo.toml",
+        "native/**/Cargo.lock"
+      ],
+      "outputs": [
+        "native/target/**",
+        "packages/native/index.node"
+      ],
+      "cache": true,
+      "persistent": false,
+      "env": ["CARGO_HOME", "RUSTUP_HOME", "TARGET"]
     },
 
     "dev": {
@@ -19,58 +54,71 @@
       "persistent": true
     },
 
-    "test": {
-      "dependsOn": ["build"],
-      "inputs": ["src/**", "tests/**", "vitest.config.ts", "package.json"],
-      "outputs": ["coverage/**"],
-      "cache": true,
-      "env": ["CI", "NODE_ENV"]
-    },
-
-    "test:unit": {
-      "dependsOn": ["build"],
-      "inputs": ["src/**", "tests/unit/**", "vitest.config.ts"],
-      "outputs": [],
-      "cache": true
-    },
-
-    "test:integration": {
-      "dependsOn": ["build"],
-      "inputs": ["src/**", "tests/integration/**", "vitest.config.ts"],
-      "outputs": [],
-      "cache": false
-    },
-
-    "test:coverage": {
-      "dependsOn": ["build"],
-      "inputs": ["src/**", "tests/**", "vitest.config.ts"],
-      "outputs": ["coverage/**"],
-      "cache": true
-    },
-
     "lint": {
-      "dependsOn": [],
-      "inputs": ["src/**", "tests/**", "eslint.config.js", "package.json"],
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        ".eslintrc.*",
+        "eslint.config.*"
+      ],
       "outputs": [],
       "cache": true
     },
 
     "lint:fix": {
-      "dependsOn": [],
-      "inputs": ["src/**", "tests/**"],
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**/*.ts",
+        "src/**/*.tsx"
+      ],
       "outputs": [],
       "cache": false
     },
 
     "typecheck": {
       "dependsOn": ["^build"],
-      "inputs": ["src/**", "tests/**", "tsconfig.json", "package.json"],
+      "inputs": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "tsconfig.json"
+      ],
       "outputs": [],
       "cache": true
     },
 
+    "test": {
+      "dependsOn": ["build"],
+      "inputs": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "tests/**/*.ts",
+        "**/*.test.ts",
+        "**/*.spec.ts",
+        "vitest.config.ts"
+      ],
+      "outputs": ["coverage/**"],
+      "cache": true,
+      "env": ["CI", "NODE_ENV"]
+    },
+
+    "test:watch": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "persistent": true
+    },
+
     "clean": {
-      "cache": false
+      "cache": false,
+      "inputs": [],
+      "outputs": []
+    },
+
+    "generate": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "inputs": ["src/**/*.ts", "templates/**/*"],
+      "outputs": []
     }
   }
 }
