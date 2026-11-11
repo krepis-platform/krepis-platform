@@ -51,7 +51,7 @@
 - **TODO/FIXME 제한:** `TODO` 주석이 포함된 코드는 로컬 개발은 허용하나,
   `Production` 빌드 시에는 에러를 발생시켜 기술 부채가 마스터 브랜치에 방치되는
   것을 막습니다.
-- **Copyright Header:** 모든 소스 파일 상단에 Krepis 라이선스 정보(Apache-2.0)와
+- **Copyright Header:** 모든 소스 파일 상단에 Krepis 라이선스 정보(MIT)와
   소유권 문구를 자동으로 삽입하는 커스텀 스크립트를 `pre-commit` 단계에
   배치합니다.
 
