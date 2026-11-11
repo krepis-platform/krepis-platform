@@ -2,6 +2,7 @@
   "name": "@krepis/shared",
   "version": "0.0.0",
   "description": "Krepis Shared - Common utilities and types",
+  "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

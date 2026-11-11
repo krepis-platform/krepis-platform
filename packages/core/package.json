@@ -2,6 +2,7 @@
   "name": "@krepis/core",
   "version": "0.0.0",
   "description": "Krepis Core - Hexagonal Architecture Framework with DI, Context, and Pipeline",
+  "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
